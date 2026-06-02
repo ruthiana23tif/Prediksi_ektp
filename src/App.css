@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:ital@0;1&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #faf8f5;
+  --bg2:       #f2ede6;
+  --surface:   #ffffff;
+  --border:    #e8e0d5;
+  --border2:   #d6ccc0;
+  --text:      #2c2520;
+  --muted:     #7a6e65;
+  --hint:      #a89e96;
+
+  --rose:      #e8a4a4;
+  --rose-bg:   #fdf0f0;
+  --rose-dark: #8b3a3a;
+
+  --sage:      #8fb89a;
+  --sage-bg:   #eef5f0;
+  --sage-dark: #2d5c3a;
+
+  --blue:      #93b4d4;
+  --blue-bg:   #eef4fa;
+  --blue-dark: #2a4a6b;
+
+  --peach:     #e8b88a;
+  --peach-bg:  #fdf3e9;
+  --peach-dark:#7a4010;
+
+  --lavender:  #b8a8d4;
+  --lav-bg:    #f2eefa;
+  --lav-dark:  #4a3570;
+
+  --accent:    #d4826a;
+  --accent-h:  #c06b52;
+
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --serif: 'Lora', serif;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  font-size: 15px;
+}
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content { flex: 1; }
+
+/* Shared section wrapper */
+.section { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 50px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-h); transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--border2);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Tags / badges */
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+
+/* Spinner */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Page entry animation */
+.page-enter {
+  animation: fadeUp 0.35s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .card { padding: 20px; }
+  .section { padding: 0 16px; }
+}
