@@ -1,14 +1,14 @@
 const team = [
   {
-    name: "Thiana",
+    name: "Ruthiana",
     image: "👩🏻‍💻",
   },
   {
-    name: "Nama Anggota 2",
+    name: "Musarofah",
     image: "👩🏻‍🎨",
   },
   {
-    name: "Nama Anggota 3",
+    name: "Muthia",
     image: "👩🏻‍💻",
   },
 ];
