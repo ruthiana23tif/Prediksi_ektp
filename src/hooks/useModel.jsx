@@ -5,12 +5,22 @@ const ModelContext = createContext(null);
 
 export function ModelProvider({ children }) {
   const [model, setModel] = useState(null);
-  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [status, setStatus] = useState("loading");
 
   useEffect(() => {
-    tf.loadLayersModel("/model/model.json")
-      .then((m) => { setModel(m); setStatus("ready"); })
-      .catch(() => setStatus("error"));
+    async function load() {
+      try {
+        console.log("Loading model...");
+        const m = await tf.loadGraphModel("/model/model.json");
+        console.log("✅ Model loaded:", m);
+        setModel(m);
+        setStatus("ready");
+      } catch (err) {
+        console.error("❌ Error loading model:", err);
+        setStatus("error");
+      }
+    }
+    load();
   }, []);
 
   return (

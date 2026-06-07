@@ -34,13 +34,13 @@ export default function Check() {
     setResult(null);
     try {
       const tensor = tf.browser.fromPixels(imgRef.current)
-        .resizeBilinear([224, 224]).toFloat().div(255).expandDims(0);
+          .resizeBilinear([224, 224]).toFloat().div(127.5).sub(1.0).expandDims(0);
       const pred = model.predict(tensor);
       const scores = await pred.data();
       tensor.dispose(); pred.dispose();
 
-      let probAsli = scores.length === 1 ? scores[0] : scores[0];
-      let probPalsu = scores.length === 1 ? 1 - scores[0] : scores[1];
+      let probPalsu = scores[0];
+      let probAsli = 1 - scores[0];
 
       const r = {
         label: probAsli >= 0.5 ? "ASLI" : "PALSU",
