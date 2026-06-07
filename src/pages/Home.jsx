@@ -243,7 +243,6 @@ export default function Home() {
       <section
         style={{
           padding:"60px 24px",
-          background:"var(--bg2)",
           borderTop:"1px solid var(--border)",
         }}
       >
@@ -265,7 +264,7 @@ export default function Home() {
             style={{
               display:"grid",
               gridTemplateColumns:
-              "repeat(3,1fr)",
+              "repeat(auto-fit,minmax(220px,1fr))",
               gap:18,
             }}
           >
@@ -277,24 +276,40 @@ export default function Home() {
               style={{
                 textAlign:"center",
                 background:"white",
+                border:"1px solid var(--border)",
+                borderRadius:24,
+                padding:"25px 20px",
+                boxShadow:"0 12px 30px rgba(0,0,0,0.05)",
               }}
             >
-              <div style={{
-                fontSize:28
-              }}>
+
+              <div
+                style={{
+                  fontSize:32,
+                  marginBottom:12,
+                }}
+              >
                 {f.icon}
               </div>
 
-              <h3 style={{
-                fontSize:15
-              }}>
+
+              <h3
+                style={{
+                  fontSize:16,
+                  marginBottom:8,
+                }}
+              >
                 {f.title}
               </h3>
 
-              <p style={{
-                color:"var(--muted)",
-                fontSize:13
-              }}>
+
+              <p
+                style={{
+                  color:"var(--muted)",
+                  fontSize:13,
+                  lineHeight:1.5,
+                }}
+              >
                 {f.desc}
               </p>
 
