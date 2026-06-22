@@ -22,7 +22,7 @@ export default function Check() {
   const fileRef = useRef();
   const imgRef = useRef();
 
-  function handleFile(file) {
+  function handleFile(file) { //check apakah filenya img atau not
     if (!file?.type.startsWith("image/")) return;
     setResult(null);
     setPreview(URL.createObjectURL(file));
@@ -34,14 +34,18 @@ export default function Check() {
     setResult(null);
     try {
       const tensor = tf.browser.fromPixels(imgRef.current)
-          .resizeBilinear([224, 224]).toFloat().div(127.5).sub(1.0).expandDims(0);
+          .resizeBilinear([224, 224])
+          .toFloat() //ubah ke tipe desimal
+          .div(127.5).sub(1.0)//normalisasi ke -1 sampai 1
+          .expandDims(0); //tambah dimensi batch
       const pred = model.predict(tensor);
       const scores = await pred.data();
-      tensor.dispose(); pred.dispose();
+      tensor.dispose(); pred.dispose(); //membersihkan memori GPU/CPU
 
       let probPalsu = scores[0];
       let probAsli = 1 - scores[0];
 
+      //riwayat maks 5
       const r = {
         label: probAsli >= 0.5 ? "ASLI" : "PALSU",
         probAsli: (probAsli * 100).toFixed(1),
