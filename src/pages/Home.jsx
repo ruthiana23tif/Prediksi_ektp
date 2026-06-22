@@ -73,7 +73,7 @@ export default function Home() {
           </div>
 
 
-          <span
+          {/* <span
             className="tag"
             style={{
               background:"white",
@@ -81,7 +81,7 @@ export default function Home() {
             }}
           >
             AI Based System
-          </span>
+          </span> */}
 
 
           <h1
