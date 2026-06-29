@@ -22,30 +22,45 @@ export default function Check() {
   const fileRef = useRef();
   const imgRef = useRef();
 
-  function handleFile(file) { //check apakah filenya img atau not
+  function handleFile(file) {
     if (!file?.type.startsWith("image/")) return;
     setResult(null);
     setPreview(URL.createObjectURL(file));
   }
 
+  function validateAspectRatio(img) {
+    const ratio = img.naturalWidth / img.naturalHeight;
+    const MIN_RATIO = 1.2;
+    const MAX_RATIO = 2.2;
+    return ratio >= MIN_RATIO && ratio <= MAX_RATIO;
+  }
+
   async function classify() {
     if (!model || !imgRef.current) return;
+
+    if (!validateAspectRatio(imgRef.current)) {
+      setResult({
+        label: "BUKAN_KTP",
+        message: "Gambar tidak terdeteksi sebagai eKTP. Pastikan foto menampilkan seluruh bagian kartu secara utuh.",
+      });
+      return;
+    }
+
     setLoading(true);
     setResult(null);
     try {
       const tensor = tf.browser.fromPixels(imgRef.current)
           .resizeBilinear([224, 224])
-          .toFloat() //ubah ke tipe desimal
-          .div(127.5).sub(1.0)//normalisasi ke -1 sampai 1
-          .expandDims(0); //tambah dimensi batch
+          .toFloat()
+          .div(127.5).sub(1.0)
+          .expandDims(0);
       const pred = model.predict(tensor);
       const scores = await pred.data();
-      tensor.dispose(); pred.dispose(); //membersihkan memori GPU/CPU
+      tensor.dispose(); pred.dispose();
 
       let probPalsu = scores[0];
       let probAsli = 1 - scores[0];
 
-      //riwayat maks 5
       const r = {
         label: probAsli >= 0.5 ? "ASLI" : "PALSU",
         probAsli: (probAsli * 100).toFixed(1),
@@ -71,6 +86,7 @@ export default function Check() {
   }
 
   const isAsli = result?.label === "ASLI";
+  const isBukanKtp = result?.label === "BUKAN_KTP";
 
   return (
     <div className="page-enter" style={{ padding: "48px 24px" }}>
@@ -119,8 +135,27 @@ export default function Check() {
           )}
         </div>
 
-        {/* Hasil */}
-        {result && (
+        {/* Hasil: Bukan eKTP */}
+        {isBukanKtp && (
+          <div className="card" style={{ marginBottom: 20, borderColor: "var(--peach)", background: "var(--peach-bg)", animation: "fadeUp 0.3s ease both" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                background: "rgba(232,184,138,0.25)", display: "flex",
+                alignItems: "center", justifyContent: "center", fontSize: 22,
+              }}>
+                ⚠
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 22, color: "var(--peach-dark)" }}>Bukan eKTP</div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>{result.message}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Hasil: Asli / Palsu */}
+        {result && !isBukanKtp && (
           <div className="card" style={{
             marginBottom: 20,
             borderColor: isAsli ? "var(--sage)" : "var(--rose)",
