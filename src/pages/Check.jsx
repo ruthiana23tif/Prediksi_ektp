@@ -98,9 +98,9 @@ export default function Check() {
           {/* Hero */}
           <div className="hero-row">
             <div className="hero-text">
-              <div className="eyebrow">AI Document Verification</div>
+              {/* <div className="eyebrow">AI Document Verification</div> */}
               <h1>Periksa keaslian eKTP</h1>
-              <p>Unggah foto eKTP dan sistem akan menganalisis keasliannya secara otomatis dalam hitungan detik, langsung di browser kamu.</p>
+              <p>Unggah foto eKTP dan sistem akan menganalisis keasliannya secara otomatis dalam hitungan detik</p>
             </div>
             <div className="hero-stats">
               <div className="stat-tile">
