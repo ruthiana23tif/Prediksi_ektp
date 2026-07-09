@@ -10,6 +10,8 @@ const tips = [
   "Gunakan foto asli, bukan foto dari layar / monitor",
 ];
 
+const statusLabel = { ready: "System ready", loading: "Loading model", error: "Model error" };
+
 export default function Check() {
   const { model, status } = useModel();
   const [preview, setPreview] = useState(null);
@@ -87,162 +89,203 @@ export default function Check() {
 
   const isAsli = result?.label === "ASLI";
   const isBukanKtp = result?.label === "BUKAN_KTP";
+  const dotClass = status === "ready" ? "ready" : status === "error" ? "error" : "loading";
+  const asliCount = history.filter((h) => h.label === "ASLI").length;
 
   return (
-    <div className="page-enter" style={{ padding: "48px 24px" }}>
-      <div style={{ maxWidth: 680, margin: "0 auto" }}>
-        <h1 style={{ fontFamily: "var(--serif)", fontSize: "1.8rem", fontWeight: 700, marginBottom: 6 }}>Periksa eKTP</h1>
-        <p style={{ color: "var(--muted)", marginBottom: 28, fontSize: 15 }}>Upload foto eKTP untuk memeriksa keasliannya secara otomatis.</p>
-
-        <ModelStatus />
-
-        {/* Upload area */}
-        <div className="card" style={{ marginBottom: 20 }}>
-          {!preview ? (
-            <div
-              onClick={() => fileRef.current.click()}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
-              style={{
-                border: `2px dashed ${dragOver ? "var(--accent)" : "var(--border2)"}`,
-                borderRadius: 10, padding: "52px 24px", textAlign: "center", cursor: "pointer",
-                background: dragOver ? "var(--peach-bg)" : "transparent",
-                transition: "all 0.2s",
-              }}
-            >
-              <div style={{ width: 48, height: 48, margin: "0 auto 16px", color: "var(--hint)" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
-                </svg>
-              </div>
-              <p style={{ fontWeight: 600, marginBottom: 4 }}>Klik atau seret foto eKTP ke sini</p>
-              <p style={{ color: "var(--hint)", fontSize: 13 }}>JPG, PNG, WEBP — maksimal 10MB</p>
-              <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => handleFile(e.target.files[0])} />
+    <main className="page-main">
+      <div className="page-inner">
+          {/* Hero */}
+          <div className="hero-row">
+            <div className="hero-text">
+              <div className="eyebrow">AI Document Verification</div>
+              <h1>Periksa keaslian eKTP</h1>
+              <p>Unggah foto eKTP dan sistem akan menganalisis keasliannya secara otomatis dalam hitungan detik, langsung di browser kamu.</p>
             </div>
-          ) : (
-            <div>
-              <img ref={imgRef} src={preview} alt="Preview" crossOrigin="anonymous"
-                style={{ width: "100%", borderRadius: 10, border: "1px solid var(--border)", maxHeight: 300, objectFit: "cover", display: "block", marginBottom: 16 }} />
-              <div style={{ display: "flex", gap: 10 }}>
-                <button className="btn btn-outline" onClick={reset} style={{ flex: "none" }}>Ganti Foto</button>
-                <button className="btn btn-primary" onClick={classify} disabled={loading || status !== "ready"} style={{ flex: 1, justifyContent: "center" }}>
-                  {loading && <span className="spinner" />}
-                  {loading ? "Menganalisis..." : "Periksa Keaslian"}
-                </button>
+            <div className="hero-stats">
+              <div className="stat-tile">
+                <span className={`status-dot ${dotClass}`} />
+                <div>
+                  <div className="stat-value">{statusLabel[status] || "Memuat"}</div>
+                  <div className="stat-label">Status model</div>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Hasil: Bukan eKTP */}
-        {isBukanKtp && (
-          <div className="card" style={{ marginBottom: 20, borderColor: "var(--peach)", background: "var(--peach-bg)", animation: "fadeUp 0.3s ease both" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                background: "rgba(232,184,138,0.25)", display: "flex",
-                alignItems: "center", justifyContent: "center", fontSize: 22,
-              }}>
-                ⚠
+              <div className="stat-tile">
+                <div className="stat-value mono">{history.length}</div>
+                <div className="stat-label">Total pemeriksaan</div>
               </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 22, color: "var(--peach-dark)" }}>Bukan eKTP</div>
-                <div style={{ fontSize: 13, color: "var(--muted)" }}>{result.message}</div>
+              <div className="stat-tile">
+                <div className="stat-value mono">{asliCount}</div>
+                <div className="stat-label">Terdeteksi asli</div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Hasil: Asli / Palsu */}
-        {result && !isBukanKtp && (
-          <div className="card" style={{
-            marginBottom: 20,
-            borderColor: isAsli ? "var(--sage)" : "var(--rose)",
-            background: isAsli ? "var(--sage-bg)" : "var(--rose-bg)",
-            animation: "fadeUp 0.3s ease both",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                background: isAsli ? "rgba(143,184,154,0.25)" : "rgba(232,164,164,0.25)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 22,
-              }}>
-                {isAsli ? "✓" : "✕"}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 22, color: isAsli ? "var(--sage-dark)" : "var(--rose-dark)" }}>
-                  {result.label}
-                </div>
-                <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                  {isAsli ? "eKTP terdeteksi asli" : "eKTP terdeteksi mencurigakan"}
-                </div>
-              </div>
-            </div>
+          {/* Two-column layout */}
+          <div className="layout-grid">
+            {/* Main column */}
+            <div className="col-main">
+              {/* Upload area */}
+              <div className="card" style={{ marginBottom: 20, position: "relative" }}>
+                {loading && <div className="scanline" />}
 
-            {[["Asli", result.probAsli, "var(--sage)"], ["Palsu", result.probPalsu, "var(--rose)"]].map(([label, pct, color]) => (
-              <div key={label} style={{ display: "grid", gridTemplateColumns: "44px 1fr 48px", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 13, color: "var(--muted)" }}>{label}</span>
-                <div style={{ height: 7, background: "var(--border)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 4, transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)" }} />
-                </div>
-                <span style={{ fontSize: 13, color: "var(--muted)", textAlign: "right" }}>{pct}%</span>
-              </div>
-            ))}
-
-            <p style={{ fontSize: 12, color: "var(--hint)", marginTop: 12, fontStyle: "italic" }}>
-              * Hasil prediksi AI, bukan keputusan hukum resmi. Verifikasi lebih lanjut ke instansi terkait.
-            </p>
-          </div>
-        )}
-
-        {/* Tips */}
-        <div className="card" style={{ background: "var(--blue-bg)", borderColor: "var(--blue)", marginBottom: 20 }}>
-          <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 14, color: "var(--blue-dark)" }}>Tips foto yang baik</h3>
-          <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-            {tips.map((t, i) => (
-              <li key={i} style={{ display: "flex", gap: 10, fontSize: 14, color: "var(--blue-dark)", alignItems: "flex-start" }}>
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--blue)", flexShrink: 0, marginTop: 7 }} />
-                {t}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Riwayat */}
-        {history.length > 0 && (
-          <div className="card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 15 }}>Riwayat pemeriksaan</h3>
-              <button onClick={() => { setHistory([]); localStorage.removeItem("ektp_history"); }}
-                style={{ fontSize: 12, color: "var(--hint)", background: "none", border: "none", cursor: "pointer" }}>
-                Hapus semua
-              </button>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {history.map((h, i) => (
-                <div key={i} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "10px 14px", borderRadius: 10,
-                  background: h.label === "ASLI" ? "var(--sage-bg)" : "var(--rose-bg)",
-                  border: `1px solid ${h.label === "ASLI" ? "var(--sage)" : "var(--rose)"}`,
-                }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span style={{ fontWeight: 700, color: h.label === "ASLI" ? "var(--sage-dark)" : "var(--rose-dark)", fontSize: 14 }}>
-                      {h.label}
-                    </span>
-                    <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                      Asli {h.probAsli}% · Palsu {h.probPalsu}%
-                    </span>
+                {!preview ? (
+                  <div
+                    className={`dropzone${dragOver ? " drag-over" : ""}`}
+                    onClick={() => fileRef.current.click()}
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+                  >
+                    <div className="icon-wrap">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                      </svg>
+                    </div>
+                    <p className="title">Upload eKTP</p>
+                    <p className="subtitle">Drag &amp; drop atau klik untuk memilih gambar</p>
+                    <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => handleFile(e.target.files[0])} />
                   </div>
-                  <span style={{ fontSize: 12, color: "var(--hint)" }}>{h.time}</span>
+                ) : (
+                  <div>
+                    <img
+                      ref={imgRef}
+                      src={preview}
+                      alt="Preview"
+                      crossOrigin="anonymous"
+                      style={{ width: "100%", borderRadius: 12, border: "1px solid var(--border)", maxHeight: 380, objectFit: "cover", display: "block", marginBottom: 16 }}
+                    />
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button className="btn btn-outline" onClick={reset} style={{ flex: "none" }}>Ganti Foto</button>
+                      <button className="btn btn-primary" onClick={classify} disabled={loading || status !== "ready"} style={{ flex: 1, justifyContent: "center" }}>
+                        {loading && <span className="spinner" />}
+                        {loading ? "Menganalisis..." : "Mulai Prediksi"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hasil: Bukan eKTP */}
+              {isBukanKtp && (
+                <div className="card fade-up" style={{ marginBottom: 20, borderColor: "var(--peach)", background: "var(--peach-bg)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div className="result-badge" style={{ background: "rgba(201,138,44,0.16)" }}>⚠</div>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, color: "var(--peach-dark)" }}>Bukan eKTP</div>
+                      <div style={{ fontSize: 13, color: "var(--muted)" }}>{result.message}</div>
+                    </div>
+                  </div>
                 </div>
-              ))}
+              )}
+
+              {/* Hasil: Asli / Palsu */}
+              {result && !isBukanKtp && (
+                <div
+                  className="card fade-up"
+                  style={{
+                    marginBottom: 20,
+                    borderColor: isAsli ? "var(--sage)" : "var(--rose)",
+                    background: isAsli ? "var(--sage-bg)" : "var(--rose-bg)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                    <div
+                      className="result-badge"
+                      style={{ background: isAsli ? "rgba(30,138,95,0.14)" : "rgba(196,69,61,0.14)" }}
+                    >
+                      {isAsli ? "✓" : "✕"}
+                    </div>
+                    <div>
+                      <div className="mono" style={{ fontWeight: 700, fontSize: 20, letterSpacing: "0.02em", color: isAsli ? "var(--sage-dark)" : "var(--rose-dark)" }}>
+                        {result.label}
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                        {isAsli ? "eKTP terdeteksi asli" : "eKTP terdeteksi mencurigakan"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {[["Asli", result.probAsli, "var(--sage)"], ["Palsu", result.probPalsu, "var(--rose)"]].map(([label, pct, color]) => (
+                    <div key={label} style={{ display: "grid", gridTemplateColumns: "48px 1fr 52px", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, color: "var(--muted)" }}>{label}</span>
+                      <div className="progress-track">
+                        <div className="progress-fill" style={{ width: `${pct}%`, background: color }} />
+                      </div>
+                      <span className="mono" style={{ fontSize: 12.5, color: "var(--muted)", textAlign: "right" }}>{pct}%</span>
+                    </div>
+                  ))}
+
+                  <p style={{ fontSize: 12, color: "var(--hint)", marginTop: 12, fontStyle: "italic" }}>
+                    * Hasil prediksi AI, bukan keputusan hukum resmi. Verifikasi lebih lanjut ke instansi terkait.
+                  </p>
+                </div>
+              )}
+
+              {!result && (
+                <div className="card" style={{ background: "var(--bg)", border: "1px dashed var(--border)" }}>
+                  <p style={{ fontSize: 13, color: "var(--hint)", margin: 0, textAlign: "center" }}>
+                    Hasil pemeriksaan akan muncul di sini setelah kamu mengunggah dan memproses foto eKTP.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Side column */}
+            <div className="col-side">
+              <div className="card" style={{ marginBottom: 20 }}>
+                <ModelStatus />
+              </div>
+
+              {/* Tips */}
+              <div className="card tips-card" style={{ marginBottom: 20 }}>
+                <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14.5, marginBottom: 14, color: "var(--navy-800)" }}>Tips foto yang baik</h3>
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, margin: 0, padding: 0 }}>
+                  {tips.map((t, i) => (
+                    <li key={i} style={{ display: "flex", gap: 10, fontSize: 13.5, color: "var(--navy-800)", alignItems: "flex-start" }}>
+                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--blue-600)", flexShrink: 0, marginTop: 7 }} />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Riwayat */}
+              <div className="card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14.5 }}>Riwayat pemeriksaan</h3>
+                  {history.length > 0 && (
+                    <button
+                      onClick={() => { setHistory([]); localStorage.removeItem("ektp_history"); }}
+                      style={{ fontSize: 12, color: "var(--hint)", background: "none", border: "none", cursor: "pointer" }}
+                    >
+                      Hapus semua
+                    </button>
+                  )}
+                </div>
+                {history.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {history.map((h, i) => (
+                      <div key={i} className="history-row">
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <span className="mono" style={{ fontWeight: 700, color: h.label === "ASLI" ? "var(--sage-dark)" : "var(--rose-dark)", fontSize: 13.5 }}>
+                            {h.label}
+                          </span>
+                          <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                            Asli {h.probAsli}% · Palsu {h.probPalsu}%
+                          </span>
+                        </div>
+                        <span className="mono" style={{ fontSize: 11.5, color: "var(--hint)" }}>{h.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 13, color: "var(--hint)", margin: 0 }}>Belum ada riwayat pemeriksaan.</p>
+                )}
+              </div>
             </div>
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+    </main>
   );
 }
